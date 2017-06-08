@@ -118,6 +118,7 @@
   <ItemGroup>
     <ClInclude Include="MTAutomata.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="RPNParser.h" />
     <ClInclude Include="StringNumberChecker.h" />
     <ClInclude Include="Utility.h" />
   </ItemGroup>
