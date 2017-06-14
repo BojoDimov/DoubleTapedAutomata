@@ -42,8 +42,8 @@ public:
 			return;
 		}
 
-		if (state = SECOND_LANE && symbol >= '0' && symbol <= '9') {
-			number = number * 10 + (int)symbol;
+		if (state == SECOND_LANE && symbol >= '0' && symbol <= '9') {
+			number = number * 10 + (int)symbol - (int)'0';
 			return;
 		}
 
@@ -52,7 +52,7 @@ public:
 
 	bool success()const { return state == FINISHED; }
 
-	Automata& factory() {
+	Automata factory() {
 		return Automata(
 		{ { 1,true, false },{ 2, false, true } },
 		{ { 1,{ word, number }, 2 } }
