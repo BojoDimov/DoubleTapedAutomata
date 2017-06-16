@@ -143,14 +143,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MTAutomata.h" />
-    <ClInclude Include="Parser.h" />
+    <ClInclude Include="MonoidAutomata.h" />
     <ClInclude Include="RPNParser.h" />
     <ClInclude Include="StringNumberChecker.h" />
-    <ClInclude Include="Utility.h" />
+    <ClInclude Include="structs.h" />
+    <ClInclude Include="typedefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

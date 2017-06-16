@@ -1,9 +1,8 @@
-#include "Utility.h"
 #include "RPNParser.h"
 
-///Automata(state_descriptor(state, is_starting, is_final) transitions(source, m, dest)
+//Automata(state_descriptor(state, is_starting, is_final) transitions(source, m, dest)
 int main() {
-	/*Automata A1(
+	DTA A1(
 		{
 			{ 1, true, false },
 			{ 2, false, true }
@@ -11,15 +10,24 @@ int main() {
 		{
 			{ 1, { "a", 1 }, 2 }
 		});
+
 	auto copy_temp = A1;
 	A1.Concatenate(copy_temp).Union(copy_temp).Star();
-*/
+	A1.Sequalize();
+
+	DTA A2(
+	{
+		{ 1, true, false },
+		{ 2, false, true }
+	},
+	{
+		{ 1,{ "baba", 4 }, 2 }
+	});
+
+	A2.Sequalize();
+
 	std::string automata1_input = "(a,1)(a,1).(a,1)|*";
-	RPNParser_vector_operands parser;
-	//logic is OK
-	//too many calls of copy constructor
-	//reworked the functions to work with references
-	//copy-constructors are called only for the monoid automatas(very small ones)
+	RPNParser parser;
 	auto result = parser.parse(automata1_input);
 	return 0;
 }

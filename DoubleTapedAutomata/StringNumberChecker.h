@@ -1,6 +1,5 @@
 #pragma once
-#include "Utility.h"
-
+#include "typedefs.h"
 
 
 class StringNumberChecker {
@@ -52,8 +51,8 @@ public:
 
 	bool success()const { return state == FINISHED; }
 
-	Automata factory() {
-		return Automata(
+	DTA factory() {
+		return DTA(
 		{ { 1,true, false },{ 2, false, true } },
 		{ { 1,{ word, number }, 2 } }
 		);

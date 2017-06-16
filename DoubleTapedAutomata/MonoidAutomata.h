@@ -1,27 +1,32 @@
 #pragma once
-#include <string>
+#include <iostream>
+#include <algorithm>
 #include <vector>
 #include <unordered_map>
-#include <algorithm>
-#include <iostream>
 
-template<typename Monoid>
-struct ATransition {
-	int source;
-	Monoid m;
-	int dest;
-};
+#include "structs.h"
 
-struct StateDescriptor {
-	int state;
-	bool is_starting;
-	bool is_final;
-};
 
-///MTAutomata - MultiTaped Automata
+///MonoidAutomata - Multi-taped Automata
 //algorithms may be improved if i keep explicit copy of all start and final states
 template<typename Monoid>
-class MTAutomata {
+class MonoidAutomata
+{
+protected:
+	MonoidAutomata(
+		int d,
+		int s,
+		std::vector<bool>& st,
+		std::vector<bool>& fn,
+		std::vector<ATransition<Monoid>>& t
+	)
+		: disposition(d),
+		states_size(s),
+		is_starting(st),
+		is_final(fn),
+		trn(t)
+	{ }
+
 public:
 	std::vector<ATransition<Monoid>> trn;
 	std::vector<bool> is_starting;
@@ -29,18 +34,22 @@ public:
 	int disposition;
 	int states_size;
 
-	MTAutomata()
+	MonoidAutomata()
 		: states_size(0), disposition(1) {
-		std::cout<<"constructor of automata called\n";
+		std::cout << "constructor of automata called\n";
 	}
 
-	MTAutomata(const std::vector<StateDescriptor>& states, const std::vector<ATransition<Monoid>>& transitions, int Q = 0)
+	MonoidAutomata(
+		const std::vector<StateDescriptor>& states, 
+		const std::vector<ATransition<Monoid>>& transitions, 
+		int Q = 0
+	)
 		: trn(transitions), states_size(states.size()), disposition(Q + 1) {
 		init(states, Q);
-		std::cout<<"constructor of automata called\n";
+		std::cout << "constructor of automata called\n";
 	}
 
-	MTAutomata(const MTAutomata& o)
+	MonoidAutomata(const MonoidAutomata& o)
 		: disposition(o.disposition),
 		states_size(o.states_size),
 		trn(o.trn),
@@ -66,60 +75,17 @@ public:
 		disposition = Q + 1;
 	}
 
-	MTAutomata& cConcatenate(const MTAutomata& other) {
-		MTAutomata A(other);
-		std::vector<int> final_states;
-
-		A.remap(states_size - 1 + disposition);
-
-		for (int i = 0; i < states_size; i++) {
-			if (is_final[i]) {
-				is_final[i] = false;
-				final_states.push_back(i + disposition);
-			}
-		}
-
-		for (int i = 0; i < A.states_size; i++) {
-			is_starting.push_back(false);
-			is_final.push_back(A.is_final[i]);
-
-			if (A.is_starting[i]) {
-				std::for_each(final_states.cbegin(), final_states.cend(), [&](int state) {
-					trn.push_back({ state, Monoid(), i + A.disposition });
-				});
-			}
-		}
-
-		states_size += A.states_size;
-		trn.insert(trn.end(), A.trn.begin(), A.trn.end());
-		return *this;
-	}
-
-	MTAutomata& cUnion(const MTAutomata& other) {
-		MTAutomata A(other);
-		A.remap(states_size - 1 + disposition);
-
-		for (int i = 0; i < A.states_size; i++) {
-			is_starting.push_back(A.is_starting[i]);
-			is_final.push_back(A.is_final[i]);
-		}
-
-		states_size += A.states_size;
-		trn.insert(trn.end(), A.trn.begin(), A.trn.end());
-		return *this;
-	}
-
-	MTAutomata& Star(bool positive = false) {
+	MonoidAutomata& Star(bool positive = false) {
 		int new_state = states_size + disposition;
 
 		for (int i = 0; i < states_size; i++) {
 			if (is_starting[i]) {
-				trn.push_back({ new_state, Monoid(), i + disposition });
+				trn.push_back({ new_state, { }, i + disposition });
 				is_starting[i] = false;
 			}
 
 			if (is_final[i]) {
-				trn.push_back({ i + disposition, Monoid(), new_state });
+				trn.push_back({ i + disposition, { }, new_state });
 				is_final[i] = positive ? true : false;
 			}
 		}
@@ -130,7 +96,7 @@ public:
 		return *this;
 	}
 
-	MTAutomata& Concatenate(MTAutomata& A) {
+	MonoidAutomata& Concatenate(MonoidAutomata& A) {
 		std::vector<int> final_states;
 
 		A.remap(states_size - 1 + disposition);
@@ -148,7 +114,7 @@ public:
 
 			if (A.is_starting[i]) {
 				std::for_each(final_states.cbegin(), final_states.cend(), [&](int state) {
-					trn.push_back({ state, Monoid(), i + A.disposition });
+					trn.push_back({ state, { }, i + A.disposition });
 				});
 			}
 		}
@@ -158,7 +124,7 @@ public:
 		return *this;
 	}
 
-	MTAutomata& Union(MTAutomata& A) {
+	MonoidAutomata& Union(MonoidAutomata& A) {
 		A.remap(states_size - 1 + disposition);
 
 		for (int i = 0; i < A.states_size; i++) {
@@ -168,6 +134,12 @@ public:
 
 		states_size += A.states_size;
 		trn.insert(trn.end(), A.trn.begin(), A.trn.end());
+		return *this;
+	}
+
+	///makes the transitions on the first lane by one symbol or epsillon
+	MonoidAutomata& Sequalize() {
+		std::cout << "Not specialized function\n";
 		return *this;
 	}
 
@@ -189,4 +161,34 @@ private:
 		});
 	}
 };
+
+template <>
+MonoidAutomata<StringNumber>& MonoidAutomata<StringNumber>::Sequalize() {
+	std::vector<ATransition<StringNumber>> new_transitions;
+	new_transitions.reserve(trn.capacity());
+
+	for (auto it = trn.begin(); it != trn.end(); it++) {
+		if (it->m.word.length() > 1) {
+			int prev_state = it->source;
+			int next_state = states_size + disposition;
+
+			for (int i = 0; i < it->m.word.length() - 1; i++) {
+				new_transitions.push_back({ prev_state, { it->m.word.substr(i,1), i == 0 ? it->m.number : 0}, next_state });
+				is_starting.push_back(false);
+				is_final.push_back(false);
+
+				prev_state = next_state;
+				next_state = (i == it->m.word.length() - 1 ? it->dest : next_state + 1);
+			}
+			new_transitions.push_back({ prev_state, { it->m.word.substr(it->m.word.length() - 1 ,1), 0 }, it->dest });
+		}
+		else {
+			new_transitions.push_back(*it);
+		}
+	}
+
+	trn = new_transitions;
+	return *this;
+}
+
 
