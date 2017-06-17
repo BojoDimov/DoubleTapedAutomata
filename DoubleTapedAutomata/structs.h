@@ -19,7 +19,8 @@ struct StringNumber {
 	int number;
 };
 
+//TODO: make symbol of type int or char
 struct SymbolNumber {
-	int symbol;
+	std::string symbol;
 	int number;
 };

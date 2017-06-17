@@ -1,4 +1,5 @@
 #include "RPNParser.h"
+#include "RTT.h"
 
 //Automata(state_descriptor(state, is_starting, is_final) transitions(source, m, dest)
 int main() {
@@ -24,7 +25,8 @@ int main() {
 		{ 1,{ "baba", 4 }, 2 }
 	});
 
-	A2.Sequalize();
+	A2.Sequalize().MakeRTT();
+	//auto res = dc(A2.states_size, A2.disposition, A2.trn);
 
 	std::string automata1_input = "(a,1)(a,1).(a,1)|*";
 	RPNParser parser;

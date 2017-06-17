@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClInclude Include="MonoidAutomata.h" />
     <ClInclude Include="RPNParser.h" />
+    <ClInclude Include="RTT.h" />
     <ClInclude Include="StringNumberChecker.h" />
     <ClInclude Include="structs.h" />
     <ClInclude Include="typedefs.h" />

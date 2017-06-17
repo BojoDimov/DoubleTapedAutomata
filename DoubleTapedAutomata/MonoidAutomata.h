@@ -12,7 +12,38 @@
 template<typename Monoid>
 class MonoidAutomata
 {
-protected:
+public:
+	std::vector<ATransition<Monoid>> trn;
+	std::vector<bool> is_starting;
+	std::vector<bool> is_final;
+	int disposition;
+	int states_size;
+
+	MonoidAutomata()
+		: states_size(0), disposition(1) {
+		//std::cout << "constructor of automata called\n";
+	}
+
+	MonoidAutomata(
+		const std::vector<StateDescriptor>& states, 
+		const std::vector<ATransition<Monoid>>& transitions, 
+		int Q = 0
+	)
+		: trn(transitions), states_size(states.size()), disposition(Q + 1) {
+		init(states, Q);
+		//std::cout << "constructor of automata called\n";
+	}
+
+	MonoidAutomata(const MonoidAutomata& o)
+		: disposition(o.disposition),
+		states_size(o.states_size),
+		trn(o.trn),
+		is_starting(o.is_starting),
+		is_final(o.is_final)
+	{
+		//std::cout << "copy-constructor of automata called\n";
+	}
+
 	MonoidAutomata(
 		int d,
 		int s,
@@ -27,37 +58,6 @@ protected:
 		trn(t)
 	{ }
 
-public:
-	std::vector<ATransition<Monoid>> trn;
-	std::vector<bool> is_starting;
-	std::vector<bool> is_final;
-	int disposition;
-	int states_size;
-
-	MonoidAutomata()
-		: states_size(0), disposition(1) {
-		std::cout << "constructor of automata called\n";
-	}
-
-	MonoidAutomata(
-		const std::vector<StateDescriptor>& states, 
-		const std::vector<ATransition<Monoid>>& transitions, 
-		int Q = 0
-	)
-		: trn(transitions), states_size(states.size()), disposition(Q + 1) {
-		init(states, Q);
-		std::cout << "constructor of automata called\n";
-	}
-
-	MonoidAutomata(const MonoidAutomata& o)
-		: disposition(o.disposition),
-		states_size(o.states_size),
-		trn(o.trn),
-		is_starting(o.is_starting),
-		is_final(o.is_final)
-	{
-		std::cout << "copy-constructor of automata called\n";
-	}
 
 	void remap(int Q) {
 		std::unordered_map<int, int> states_map;
@@ -139,8 +139,13 @@ public:
 
 	///makes the transitions on the first lane by one symbol or epsillon
 	MonoidAutomata& Sequalize() {
-		std::cout << "Not specialized function\n";
+		std::cout << "Not specialized function 'Sequalize'\n";
 		return *this;
+	}
+
+	MonoidAutomata<SymbolNumber> MakeRTT() {
+		std::cout << "Not specialized function 'MakeRTT'\n";
+		return MonoidAutomata<SymbolNumber>();
 	}
 
 private:
@@ -176,7 +181,7 @@ MonoidAutomata<StringNumber>& MonoidAutomata<StringNumber>::Sequalize() {
 				new_transitions.push_back({ prev_state, { it->m.word.substr(i,1), i == 0 ? it->m.number : 0}, next_state });
 				is_starting.push_back(false);
 				is_final.push_back(false);
-
+				states_size++;
 				prev_state = next_state;
 				next_state = (i == it->m.word.length() - 1 ? it->dest : next_state + 1);
 			}
