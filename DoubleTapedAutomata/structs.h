@@ -24,3 +24,32 @@ struct SymbolNumber {
 	std::string symbol;
 	int number;
 };
+
+struct IntPair {
+	int a;
+	int b;
+
+	bool operator==(const IntPair other) {
+		return a == other.a && b == other.b;
+	}
+
+	bool operator<(IntPair other) const{
+		if (a == other.a) {
+			if (b == other.b) {
+				return false;
+			}
+			else {
+				return b < other.b;
+			}
+		}
+		else {
+			return a < other.a;
+		}
+	}
+};
+
+struct OSTransition {
+	IntPair source;
+	IntPair m;
+	IntPair dest;
+};
