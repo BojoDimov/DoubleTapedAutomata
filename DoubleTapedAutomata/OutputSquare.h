@@ -42,8 +42,8 @@ public:
 						{ rtt.trn[q].dest, rtt.trn[p].dest }
 					});
 
-					st.insert({ rtt.trn[q].source, rtt.trn[p].source });
-					st.insert({ rtt.trn[q].dest, rtt.trn[p].dest });
+					//st.insert({ rtt.trn[q].source, rtt.trn[p].source });
+					//st.insert({ rtt.trn[q].dest, rtt.trn[p].dest });
 				}
 			}
 		}
@@ -75,7 +75,7 @@ public:
 
 		for (int i = 0; i < states.size(); i++) {
 			if (is_starting[i]) {
-				adm.insert(states[i], { 0, 0 });
+				adm[states[i]] = { 0, 0 };
 			}
 		}
 
@@ -134,7 +134,7 @@ public:
 						return result;
 					}
 
-					result.insert(transitions[i].dest, { wa,wb });
+					result[transitions[i].dest] = { wa,wb };
 				}
 			}
 		}

@@ -29,9 +29,13 @@ struct IntPair {
 	int a;
 	int b;
 
-	bool operator==(const IntPair other) {
+	bool operator==(IntPair other) const {
 		return a == other.a && b == other.b;
 	}
+
+	/*bool operator!=(IntPair other) const {
+		return a != other.a && b != other.b;
+	}*/
 
 	bool operator<(IntPair other) const{
 		if (a == other.a) {

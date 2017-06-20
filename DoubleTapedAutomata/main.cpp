@@ -29,6 +29,7 @@ int main() {
 	//auto res = dc(A2.states_size, A2.disposition, A2.trn);
 
 	OutputSquare a(A2.Sequalize().MakeRTT());
+	auto test = a.is_functional();
 
 	std::string automata1_input = "(a,1)(a,1).(a,1)|*";
 	RPNParser parser;
