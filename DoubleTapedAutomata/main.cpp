@@ -10,11 +10,30 @@ int main(int argc, char ** argv) {
 	/*DTA A1(
 		{
 			{ 1, true, false },
-			{ 2, false, true }
+			{ 2, false, true },
+			{ 3, false, true },
+			{ 4, false, true }
 		}, 
 		{
 			{ 1, { "a", 1 }, 2 }
-		});*/
+		});
+
+	DTA A2(
+	{
+		{ 1, true, false },
+		{ 2, false, true },
+		{ 3, true, false },
+		{ 4, false, true },
+		{ 5, true, false },
+		{ 6, false, true }
+	},
+	{
+		{ 1,{ "b", 1 }, 2 },
+		{ 3,{ "c", 1 }, 4 },
+		{ 5,{ "b", 1 }, 6 }
+	});
+
+	A1.Concatenate(A2);*/
 
 	RPNParser parser;
 	std::string regex;

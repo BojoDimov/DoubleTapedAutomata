@@ -96,7 +96,8 @@ public:
 		return *this;
 	}
 
-	MonoidAutomata& Concatenate(MonoidAutomata& A) {
+	//creates e-transitions
+	MonoidAutomata& Concatenate_old(MonoidAutomata& A) {
 		std::vector<int> final_states;
 
 		A.remap(states_size - 1 + disposition);
@@ -121,6 +122,70 @@ public:
 
 		states_size += A.states_size;
 		trn.insert(trn.end(), A.trn.begin(), A.trn.end());
+		return *this;
+	}
+
+	//optimized concatenation(does not create e-transitions)
+	MonoidAutomata& Concatenate(MonoidAutomata& A) {
+		std::vector<int> final_states;
+		std::vector<int> starting_states;
+
+		A.remap(states_size - 1 + disposition);
+
+		for (int i = 0; i < states_size; i++) {
+			if (is_final[i]) {
+				is_final[i] = false;
+				final_states.push_back(i + disposition);
+			}
+		}
+
+		std::vector<ATransition<Monoid>> additional_trn1;
+		std::vector<ATransition<Monoid>> additional_trn2;
+		additional_trn2.reserve(A.trn.size());
+
+		for (int i = 0; i < A.trn.size(); i++) {
+			if (A.is_starting[A.trn[i].source - A.disposition]) {
+				for (int j = 0; j < final_states.size(); j++) {
+					additional_trn1.push_back({ final_states[j], A.trn[i].m, A.trn[i].dest });
+				}
+			}
+			else {
+				additional_trn2.push_back(A.trn[i]);
+			}
+		}
+
+		int current = states_size - 1 + disposition;
+		std::unordered_map<int, int> rmp;
+		std::vector<bool> new_starting;
+		std::vector<bool> new_final;
+		for (int i = 0; i < A.states_size; i++) {
+			if (!A.is_starting[i]) {
+				new_starting.push_back(false);
+				if (A.is_final[i]) {
+					new_final.push_back(true);
+				}
+				else {
+					new_final.push_back(false);
+				}
+				states_size++;
+				rmp[i + A.disposition] = ++current;
+			}
+		}
+
+		std::for_each(additional_trn2.begin(), additional_trn2.end(), [&](ATransition<Monoid>& t) {
+			t.source = rmp[t.source];
+			t.dest = rmp[t.dest];
+		});
+
+		std::for_each(additional_trn1.begin(), additional_trn1.end(), [&](ATransition<Monoid>& t) {
+			t.dest = rmp[t.dest];
+		});
+
+		trn.insert(trn.end(), additional_trn2.begin(), additional_trn2.end());
+		trn.insert(trn.end(), additional_trn1.begin(), additional_trn1.end());
+		is_starting.insert(is_starting.end(), new_starting.begin(), new_starting.end());
+		is_final.insert(is_final.end(), new_final.begin(), new_final.end());
+
 		return *this;
 	}
 

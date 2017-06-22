@@ -12,6 +12,10 @@ public:
 
 	OutputSquare(RTT rtt)
 	{
+		if (rtt.trn.size() == 0) {
+			return;
+		}
+
 		std::sort(rtt.trn.begin(), rtt.trn.end(), [](const RTTTransition& a, const RTTTransition& b) {
 			return a.m.symbol < b.m.symbol;
 		});
@@ -42,8 +46,8 @@ public:
 						{ rtt.trn[q].dest, rtt.trn[p].dest }
 					});
 
-					//st.insert({ rtt.trn[q].source, rtt.trn[p].source });
-					//st.insert({ rtt.trn[q].dest, rtt.trn[p].dest });
+					st.insert({ rtt.trn[q].source, rtt.trn[p].source });
+					st.insert({ rtt.trn[q].dest, rtt.trn[p].dest });
 				}
 			}
 		}
