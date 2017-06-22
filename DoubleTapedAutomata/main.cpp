@@ -1,38 +1,54 @@
+#include <ctime>
+#include <fstream>
+#include <ctime>
 #include "RPNParser.h"
 #include "RTT.h"
 #include "OutputSquare.h"
 
 //Automata(state_descriptor(state, is_starting, is_final) transitions(source, m, dest)
-int main() {
-	DTA A1(
+int main(int argc, char ** argv) {
+	/*DTA A1(
 		{
 			{ 1, true, false },
 			{ 2, false, true }
 		}, 
 		{
 			{ 1, { "a", 1 }, 2 }
-		});
+		});*/
 
-	auto copy_temp = A1;
-	A1.Concatenate(copy_temp).Union(copy_temp).Star();
-	A1.Sequalize();
-
-	DTA A2(
-	{
-		{ 1, true, false },
-		{ 2, false, true }
-	},
-	{
-		{ 1,{ "baba", 4 }, 2 }
-	});
-
-	//auto res = dc(A2.states_size, A2.disposition, A2.trn);
-
-	OutputSquare a(A2.Sequalize().MakeRTT());
-	auto test = a.is_functional();
-
-	std::string automata1_input = "(a,1)(a,1).(a,1)|*";
 	RPNParser parser;
-	auto result = parser.parse(automata1_input);
+	std::string regex;
+	std::string line;
+	std::ifstream myfile(argv[1]);
+	auto timer = clock();
+	if(myfile.is_open()){
+		while (std::getline(myfile, line))
+		{
+			regex += line;
+		}
+		myfile.close();
+	}
+	else {
+		std::cout << "File not found!\nTerminating\n";
+	}
+
+	/// (double)CLOCKS_PER_SEC
+
+	std::cout << "Reading file completed. Time elapsed: " << (clock() - timer)  << "ms" << std::endl;
+	timer = clock();
+	auto A = parser.parse(regex);
+	std::cout << "Parsing regex completed. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	timer = clock();
+	A.Sequalize();
+	std::cout << "Sequalizing completed. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	timer = clock();
+	auto B = A.MakeRTT();
+	std::cout << "Real-time transducer created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	timer = clock();
+	OutputSquare C(B);
+	std::cout << "Output square created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	timer = clock();
+	auto is_function = C.is_functional();
+	std::cout << "Function check completed. Time elapsed: " << (clock() - timer) << "ms" << "\nResult:" << is_function << std::endl;
 	return 0;
 }

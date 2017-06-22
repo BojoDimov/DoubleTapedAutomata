@@ -121,6 +121,5 @@ MonoidAutomata<SymbolNumber> MonoidAutomata<StringNumber>::MakeRTT() {
 		}
 	}
 
-	std::cout << "Specialised 'MakeRTT'\n";
 	return MonoidAutomata<SymbolNumber>(disposition, states_size, is_starting, is_final, rtt_trn);
 }
