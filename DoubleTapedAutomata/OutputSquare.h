@@ -119,8 +119,11 @@ public:
 
 		for (int i = 0; i < states.size(); i++) {
 			if (is_final[i]) {
-				auto w = adm.find(states[i])->second;
-				if (w.a != 0 || w.b != 0) {
+				auto w = adm.find(states[i]);
+				if (w == adm.end()) {
+					continue;
+				}
+				if (w->second.a != 0 || w->second.b != 0) {
 					return false;
 				}
 			}
