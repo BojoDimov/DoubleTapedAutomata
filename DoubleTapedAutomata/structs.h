@@ -33,9 +33,9 @@ struct IntPair {
 		return a == other.a && b == other.b;
 	}
 
-	/*bool operator!=(IntPair other) const {
-		return a != other.a && b != other.b;
-	}*/
+	bool operator!=(IntPair other) const {
+		return a != other.a || b != other.b;
+	}
 
 	bool operator<(IntPair other) const{
 		if (a == other.a) {

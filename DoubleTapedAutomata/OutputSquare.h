@@ -9,7 +9,7 @@ public:
 	std::vector<OSTransition> trn;
 	std::vector<bool> is_starting;
 	std::vector<bool> is_final;
-
+	std::map<IntPair, IntPair> source_index;
 	OutputSquare(RTT rtt)
 	{
 		if (rtt.trn.size() == 0) {
@@ -67,6 +67,26 @@ public:
 			}
 			else {
 				is_final.push_back(false);
+			}
+		}
+	}
+
+	void create_index() {
+		std::sort(trn.begin(), trn.end(), [](const OSTransition& a, const OSTransition& b) {
+			return a.source < b.source;
+		});
+
+		auto current = trn[0].source;
+		int start = 0;
+		for (int i = 1; i < trn.size(); i++) {
+			if (current != trn[i].source) {
+				source_index[current] = { start, i };
+				start = i;
+				current = trn[i].source;
+			}
+
+			if (i == trn.size() - 1) {
+				source_index[current] = { start, i + 1 };
 			}
 		}
 	}
@@ -149,7 +169,9 @@ public:
 	std::vector<OSTransition> get_transitions(IntPair source) {
 		std::vector<OSTransition> result;
 
-		for (int i = 0; i < trn.size(); i++) {
+		auto finding = source_index[source];
+
+		for (int i =finding.a; i < finding.b; i++) {
 			if (trn[i].source == source) {
 				result.push_back(trn[i]);
 			}
