@@ -32,7 +32,7 @@ struct Path {
 //TODO:
 //functionalization of delta only for e-transitions
 //rework this using 'range' for the return type
-std::vector<DTATransition> F(int state, std::vector<DTATransition> trn) {
+std::vector<DTATransition> F(int state, std::vector<DTATransition>& trn) {
 	std::vector<DTATransition> result;
 	result.reserve(trn.size());
 
