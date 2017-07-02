@@ -52,6 +52,16 @@ struct IntPair {
 	}
 };
 
+struct IntPairHash {
+	int first = 1000003;
+	int second = 1000033;
+
+	std::size_t operator()(IntPair const& s) const
+	{
+		return (first % s.a) ^ (second % s.b);
+	}
+};
+
 struct OSTransition {
 	IntPair source;
 	IntPair m;

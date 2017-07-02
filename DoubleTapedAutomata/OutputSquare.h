@@ -1,68 +1,106 @@
 #pragma once
 #include <set>
+#include <unordered_set>
 #include <map>
 #include "typedefs.h"
 
 class OutputSquare {
 public:
 	std::vector<IntPair> states;
+	//std::set<IntPair> states;
 	std::vector<OSTransition> trn;
 	std::vector<bool> is_starting;
 	std::vector<bool> is_final;
 	std::map<IntPair, IntPair> source_index;
-	OutputSquare(RTT rtt)
+
+	OutputSquare(RTT& rtt)
 	{
 		if (rtt.trn.size() == 0) {
 			return;
 		}
 
-		std::sort(rtt.trn.begin(), rtt.trn.end(), [](const RTTTransition& a, const RTTTransition& b) {
-			return a.m.symbol < b.m.symbol;
-		});
+		discover_states(rtt);
 
-		std::vector<IntPair> symbol_index;
-		std::string current_symbol = rtt.trn[0].m.symbol;
-		int start = 0;
-		for (int i = 1; i < rtt.trn.size(); i++) {
-			if (rtt.trn[i].m.symbol != current_symbol) {
-				symbol_index.push_back({ start, i });
-				start = i;
-				current_symbol = rtt.trn[i].m.symbol;
-			}
+		init_states(rtt);
+	}
 
-			if (i == rtt.trn.size() - 1) {
-				symbol_index.push_back({ start, i + 1 });
-			}
+	//IntPair - a = number; b = dest
+	typedef std::unordered_map<int, std::map<std::string, std::vector<IntPair>>> rtt_index;
+
+	rtt_index create_rtt_index(RTT& rtt) {
+		rtt_index index;
+		for (const auto& t : rtt.trn) {
+			index[t.source][t.m.symbol].push_back({ t.m.number, t.dest });
 		}
 
-		//create delta
-		std::set<IntPair> st;
-		for (int i = 0; i < symbol_index.size(); i++) {
-			for (int q = symbol_index[i].a; q < symbol_index[i].b; q++) {
-				for (int p = symbol_index[i].a; p < symbol_index[i].b; p++) {
-					trn.push_back({
-						{ rtt.trn[q].source, rtt.trn[p].source },
-						{ rtt.trn[q].m.number, rtt.trn[p].m.number },
-						{ rtt.trn[q].dest, rtt.trn[p].dest }
-					});
+		return index;
+	}
 
-					st.insert({ rtt.trn[q].source, rtt.trn[p].source });
-					st.insert({ rtt.trn[q].dest, rtt.trn[p].dest });
+	void discover_states(RTT& rtt) {
+		/*std::unordered_set<IntPair, IntPairHash> states_marker;*/
+		auto index = create_rtt_index(rtt);
+		std::set<IntPair> states_marker;
+
+		//init stating states
+		for (int i = 0; i < rtt.states_size; i++) {
+			if (rtt.is_starting[i]) {
+				for (int j = 0; j < rtt.states_size; j++) {
+					if (rtt.is_starting[j]) {
+						states.push_back({ i + rtt.disposition, j + rtt.disposition });
+						states_marker.insert({ i + rtt.disposition, j + rtt.disposition });
+					}
 				}
 			}
 		}
 
-		//create states from the information taken from delta
-		for (auto it = st.begin(); it != st.end(); it++) {
-			states.push_back(*it);
-			if (rtt.is_starting[it->a - rtt.disposition] && rtt.is_starting[it->b - rtt.disposition]) {
+		int n = 0, iterations = 0;
+		while (n < states.size()) {
+			auto cs = states[n];
+			auto trn1 = index[cs.a];
+			auto trn2 = index[cs.b];
+			for (auto i = trn1.begin(), j = trn2.begin(); i != trn1.end() && j != trn2.end(); i++, j++) {
+				//std::map is sorted so we can do this
+				while (i != trn1.end() && j != trn2.end() && i->first < j->first) {
+					i++;
+				}
+
+				while (j != trn2.end() && i != trn1.end() && j->first < i->first) {
+					j++;
+				}
+
+				//if the are not trn.end(), they are equal
+				if (i != trn1.end() && j != trn2.end()) {
+					for (const auto& m1 : i->second) {
+						for (const auto& m2 : j->second) {
+							IntPair dest = { m1.b, m2.b };
+							trn.push_back({ cs, { m1.a, m2.a}, dest });
+							if (states_marker.find(dest) == states_marker.end()) {
+								states_marker.insert(dest);
+								states.push_back(dest);
+							}
+						}
+					}
+				}
+
+				//this is needed because we cant ++ on end() iterator
+				if (i == trn1.end() || j == trn2.end()) {
+					break;
+				}
+			}
+			n++;
+		}
+	}
+
+	void init_states(const RTT& rtt) {
+		for (const auto& st: states){
+			if (rtt.is_starting[st.a - rtt.disposition] && rtt.is_starting[st.b - rtt.disposition]) {
 				is_starting.push_back(true);
 			}
 			else {
 				is_starting.push_back(false);
 			}
 
-			if (rtt.is_final[it->a - rtt.disposition] && rtt.is_final[it->b - rtt.disposition]) {
+			if (rtt.is_final[st.a - rtt.disposition] && rtt.is_final[st.b - rtt.disposition]) {
 				is_final.push_back(true);
 			}
 			else {
