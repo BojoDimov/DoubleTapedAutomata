@@ -53,19 +53,19 @@ int main(int argc, char ** argv) {
 
 	/// (double)CLOCKS_PER_SEC
 
-	std::cout << "Reading file completed. Time elapsed: " << (clock() - timer)  << "ms" << std::endl;
+	std::cout << "Reading file completed.\nTime elapsed: " << (clock() - timer)  << "ms" << std::endl;
 	timer = clock();
 	auto A = parser.parse(regex);
-	std::cout << "Parsing regex completed. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	std::cout << "Parsing regex completed.\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
 	timer = clock();
 	A.Sequalize();
-	std::cout << "Sequalizing completed. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	std::cout << "Sequalizing completed.\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
 	timer = clock();
 	auto B = A.MakeRTT();
-	std::cout << "Real-time transducer created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	std::cout << "Real-time transducer created. States " << B.states_size << ". Transitions " << B.trn.size() << "\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
 	timer = clock();
 	OutputSquare C(B);
-	std::cout << "Output square created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	std::cout << "Output square created. States " << C.states.size() << ". Transitions " << C.trn.size() << "\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
 	timer = clock();
 	C.create_index();
 	std::cout << "Index created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
