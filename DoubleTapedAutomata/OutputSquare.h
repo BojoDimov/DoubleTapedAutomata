@@ -4,6 +4,10 @@
 #include <map>
 #include "typedefs.h"
 
+typedef std::unordered_map<int, std::map<std::string, std::vector<IntPair>>> rtt_index;
+//map<q, map<p, vector<pair<m, dest>>>
+typedef std::unordered_map<int, std::unordered_map<int, std::vector<std::pair<IntPair, IntPair>>>> os_index;
+
 class OutputSquare {
 public:
 	std::vector<IntPair> states;
@@ -12,11 +16,19 @@ public:
 	std::vector<bool> is_starting;
 	std::vector<bool> is_final;
 	std::map<IntPair, IntPair> source_index;
+	os_index index;
 
 	OutputSquare(RTT& rtt)
 	{
 		if (rtt.trn.size() == 0) {
 			return;
+		}
+
+		std::vector<RTTTransition> test;
+		for (int i = 0; i < rtt.trn.size(); i++) {
+			if (rtt.trn[i].source == 65) {
+				test.push_back(rtt.trn[i]);
+			}
 		}
 
 		discover_states(rtt);
@@ -25,7 +37,6 @@ public:
 	}
 
 	//IntPair - a = number; b = dest
-	typedef std::unordered_map<int, std::map<std::string, std::vector<IntPair>>> rtt_index;
 
 	rtt_index create_rtt_index(RTT& rtt) {
 		rtt_index index;
@@ -37,11 +48,10 @@ public:
 	}
 
 	void discover_states(RTT& rtt) {
-		/*std::unordered_set<IntPair, IntPairHash> states_marker;*/
 		auto index = create_rtt_index(rtt);
 		std::set<IntPair> states_marker;
+		std::set<IntPair> symmetric_marked;
 
-		//init stating states
 		for (int i = 0; i < rtt.states_size; i++) {
 			if (rtt.is_starting[i]) {
 				for (int j = 0; j < rtt.states_size; j++) {
@@ -53,38 +63,54 @@ public:
 			}
 		}
 
-		int n = 0, iterations = 0;
+		int n = 0;
 		while (n < states.size()) {
 			auto cs = states[n];
+			if (symmetric_marked.find(cs) != symmetric_marked.end()) {
+				n++;
+				continue;
+			}
+			else if (cs.a != cs.b) {
+				symmetric_marked.insert({ cs.b, cs.a });
+			}
+
 			auto trn1 = index[cs.a];
 			auto trn2 = index[cs.b];
-			for (auto i = trn1.begin(), j = trn2.begin(); i != trn1.end() && j != trn2.end(); i++, j++) {
-				//std::map is sorted so we can do this
-				while (i != trn1.end() && j != trn2.end() && i->first < j->first) {
+			auto i = trn1.begin();
+			auto j = trn2.begin();
+			while (i != trn1.end() && j != trn2.end())
+			{
+				if (i->first < j->first) {
 					i++;
+					continue;
 				}
 
-				while (j != trn2.end() && i != trn1.end() && j->first < i->first) {
+				if (j->first < i->first) {
 					j++;
+					continue;
 				}
 
-				//if the are not trn.end(), they are equal
-				if (i != trn1.end() && j != trn2.end()) {
+				if(i->first == j->first) {
 					for (const auto& m1 : i->second) {
 						for (const auto& m2 : j->second) {
 							IntPair dest = { m1.b, m2.b };
 							trn.push_back({ cs, { m1.a, m2.a}, dest });
+							if (cs.a != cs.b) {
+								//push the symmetric transitions <b,a>
+								trn.push_back({ {cs.b, cs.a } , { m2.a, m1.a }, { m2.b, m1.b } });
+							}
 							if (states_marker.find(dest) == states_marker.end()) {
 								states_marker.insert(dest);
 								states.push_back(dest);
+								if (cs.a != cs.b) {
+									states_marker.insert({ dest.b, dest.a });
+									states.push_back({ dest.b, dest.a });
+								}
 							}
 						}
 					}
-				}
-
-				//this is needed because we cant ++ on end() iterator
-				if (i == trn1.end() || j == trn2.end()) {
-					break;
+					i++;
+					j++;
 				}
 			}
 			n++;
@@ -126,6 +152,14 @@ public:
 			if (i == trn.size() - 1) {
 				source_index[current] = { start, i + 1 };
 			}
+		}
+	}
+
+	void create_index2() {
+		index.clear();
+		for (int i = 0; i < trn.size(); i++) {
+			auto source = trn[i].source;
+			index[source.a][source.b].push_back(std::make_pair(trn[i].m, trn[i].dest));
 		}
 	}
 

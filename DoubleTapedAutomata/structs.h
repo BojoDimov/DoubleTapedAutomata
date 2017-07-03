@@ -66,4 +66,8 @@ struct OSTransition {
 	IntPair source;
 	IntPair m;
 	IntPair dest;
+
+	bool operator<(OSTransition other) const {
+		return source < other.source;
+	}
 };
