@@ -26,7 +26,6 @@ public:
 		}
 
 		d = rtt.disposition;
-		std::cout << "d=" << d << std::endl;
 		ost_index = os_index(rtt.states_size);
 		for (int i = 0; i <rtt.states_size; i++) {
 			ost_index[i] = std::vector<std::vector<OSTransition>>(rtt.states_size);
