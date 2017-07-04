@@ -6,17 +6,18 @@
 
 typedef std::unordered_map<int, std::map<std::string, std::vector<IntPair>>> rtt_index;
 //map<q, map<p, vector<pair<m, dest>>>
-typedef std::unordered_map<int, std::unordered_map<int, std::vector<std::pair<IntPair, IntPair>>>> os_index;
+typedef std::vector<std::vector<std::vector<OSTransition>>> os_index;
 
 class OutputSquare {
 public:
 	std::vector<IntPair> states;
 	//std::set<IntPair> states;
-	std::vector<OSTransition> trn;
+	//std::vector<OSTransition> trn;
 	std::vector<bool> is_starting;
 	std::vector<bool> is_final;
-	std::map<IntPair, IntPair> source_index;
-	os_index index;
+	//std::map<IntPair, IntPair> source_index;
+	os_index ost_index;
+	int d;
 
 	OutputSquare(RTT& rtt)
 	{
@@ -24,11 +25,11 @@ public:
 			return;
 		}
 
-		std::vector<RTTTransition> test;
-		for (int i = 0; i < rtt.trn.size(); i++) {
-			if (rtt.trn[i].source == 65) {
-				test.push_back(rtt.trn[i]);
-			}
+		d = rtt.disposition;
+		std::cout << "d=" << d << std::endl;
+		ost_index = os_index(rtt.states_size);
+		for (int i = 0; i <rtt.states_size; i++) {
+			ost_index[i] = std::vector<std::vector<OSTransition>>(rtt.states_size);
 		}
 
 		discover_states(rtt);
@@ -94,10 +95,11 @@ public:
 					for (const auto& m1 : i->second) {
 						for (const auto& m2 : j->second) {
 							IntPair dest = { m1.b, m2.b };
-							trn.push_back({ cs, { m1.a, m2.a}, dest });
+							//trn.push_back({ cs, { m1.a, m2.a}, dest });
+							ost_index[cs.a - d][cs.b - d].push_back({ cs,{ m1.a, m2.a }, dest });
 							if (cs.a != cs.b) {
-								//push the symmetric transitions <b,a>
-								trn.push_back({ {cs.b, cs.a } , { m2.a, m1.a }, { m2.b, m1.b } });
+								//trn.push_back({ {cs.b, cs.a } , { m2.a, m1.a }, { m2.b, m1.b } });
+								ost_index[cs.b - d][cs.a - d].push_back({ { cs.b, cs.a } ,{ m2.a, m1.a },{ m2.b, m1.b } });
 							}
 							if (states_marker.find(dest) == states_marker.end()) {
 								states_marker.insert(dest);
@@ -135,7 +137,7 @@ public:
 		}
 	}
 
-	void create_index() {
+	/*void create_index() {
 		std::sort(trn.begin(), trn.end(), [](const OSTransition& a, const OSTransition& b) {
 			return a.source < b.source;
 		});
@@ -153,15 +155,7 @@ public:
 				source_index[current] = { start, i + 1 };
 			}
 		}
-	}
-
-	void create_index2() {
-		index.clear();
-		for (int i = 0; i < trn.size(); i++) {
-			auto source = trn[i].source;
-			index[source.a][source.b].push_back(std::make_pair(trn[i].m, trn[i].dest));
-		}
-	}
+	}*/
 
 	bool is_functional() {
 		std::map<IntPair, IntPair> adm;
@@ -242,7 +236,7 @@ public:
 	}
 
 	std::vector<OSTransition> get_transitions(IntPair source) {
-		std::vector<OSTransition> result;
+		/*std::vector<OSTransition> result;
 
 		auto finding = source_index[source];
 
@@ -252,6 +246,8 @@ public:
 			}
 		}
 
-		return result;
+		return result;*/
+
+		return ost_index[source.a - d][source.b - d];
 	}
 };

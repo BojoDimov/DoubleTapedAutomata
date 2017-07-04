@@ -65,10 +65,10 @@ int main(int argc, char ** argv) {
 	std::cout << "Real-time transducer created. States " << B.states_size << ". Transitions " << B.trn.size() << "\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
 	timer = clock();
 	OutputSquare C(B);
-	std::cout << "Output square created. States " << C.states.size() << ". Transitions " << C.trn.size() << "\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
-	timer = clock();
+	std::cout << "Output square created. States " << C.states.size() << "\nTime elapsed: " << (clock() - timer) << "ms" << std::endl;
+	/*timer = clock();
 	C.create_index();
-	std::cout << "Index created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;
+	std::cout << "Index created. Time elapsed: " << (clock() - timer) << "ms" << std::endl;*/
 	timer = clock();
 	auto is_function = C.is_functional();
 	std::cout << "Function check completed. Time elapsed: " << (clock() - timer) << "ms" << "\nResult:" << is_function << std::endl;
